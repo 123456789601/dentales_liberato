@@ -1,0 +1,481 @@
+np// =============================================================================
+// Dentales Liberato - Esquema Prisma ORM v2
+// RBAC: roles y permisos en tablas separadas
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum TipoMovimiento {
+  Entrada
+  Salida
+  Ajuste
+}
+
+enum UnidadMedida {
+  gramo
+  kilogramo
+  mililitro
+  litro
+  unidad
+  caja
+  frasco
+  bolsa
+}
+
+enum EstadoCaso {
+  pendiente
+  en_progreso
+  completado
+  cancelado
+}
+
+enum TipoTransaccion {
+  ingreso
+  gasto
+  abono
+  reembolso
+}
+
+enum TipoCuenta {
+  por_cobrar
+  por_pagar
+}
+
+enum EstadoSolicitud {
+  pendiente
+  aprobada
+  rechazada
+  surtida
+}
+
+enum PrioridadSolicitud {
+  baja
+  media
+  alta
+  urgente
+}
+
+enum EstadoConteo {
+  en_progreso
+  completado
+  cancelado
+}
+
+enum EstadoOrdenCompra {
+  borrador
+  enviada
+  recibida
+  cancelada
+}
+
+/// Roles del sistema (tabla separada por seguridad)
+model Rol {
+  id          Int          @id @default(autoincrement()) @db.UnsignedInt
+  codigo      String       @unique @db.VarChar(50)
+  nombre      String       @db.VarChar(100)
+  descripcion String?      @db.VarChar(255)
+  activo      Boolean      @default(true)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  usuarios    Usuario[]
+  permisos    RolPermiso[]
+
+  @@map("roles")
+}
+
+/// Permisos granulares por módulo
+model Permiso {
+  id          Int          @id @default(autoincrement()) @db.UnsignedInt
+  codigo      String       @unique @db.VarChar(80)
+  nombre      String       @db.VarChar(120)
+  modulo      String       @db.VarChar(50)
+  descripcion String?      @db.VarChar(255)
+  roles       RolPermiso[]
+
+  @@index([modulo])
+  @@map("permisos")
+}
+
+/// Relación muchos a muchos: rol ↔ permiso
+model RolPermiso {
+  rolId      Int     @map("rol_id") @db.UnsignedInt
+  permisoId  Int     @map("permiso_id") @db.UnsignedInt
+  rol        Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  permiso    Permiso @relation(fields: [permisoId], references: [id], onDelete: Cascade)
+
+  @@id([rolId, permisoId])
+  @@map("rol_permisos")
+}
+
+model Usuario {
+  id           Int                 @id @default(autoincrement()) @db.UnsignedInt
+  nombre       String              @db.VarChar(120)
+  email        String              @unique @db.VarChar(180)
+  passwordHash String              @map("password_hash") @db.VarChar(255)
+  rolId        Int                 @map("rol_id") @db.UnsignedInt
+  activo       Boolean             @default(true)
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  rol          Rol                 @relation(fields: [rolId], references: [id], onDelete: Restrict)
+  movimientos       Movimiento[]
+  solicitudes       SolicitudReposicion[]
+  auditorias        Auditoria[]
+  conteos           ConteoInventario[]
+  ordenesCompra     OrdenCompra[]
+  notificaciones    Notificacion[]
+  transacciones     Transaccion[]
+
+  @@index([rolId])
+  @@map("usuarios")
+}
+
+model Categoria {
+  id          Int        @id @default(autoincrement()) @db.UnsignedInt
+  nombre      String     @unique @db.VarChar(100)
+  descripcion String?    @db.VarChar(255)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  productos   Producto[]
+
+  @@map("categorias")
+}
+
+model Proveedor {
+  id        Int        @id @default(autoincrement()) @db.UnsignedInt
+  nombre    String     @db.VarChar(150)
+  contacto  String?    @db.VarChar(120)
+  telefono  String?    @db.VarChar(30)
+  email     String?    @db.VarChar(180)
+  activo    Boolean    @default(true)
+  createdAt DateTime   @default(now()) @map("created_at")
+  productos     Producto[]
+  ordenesCompra OrdenCompra[]
+
+  @@map("proveedores")
+}
+
+model Producto {
+  id                  Int          @id @default(autoincrement()) @db.UnsignedInt
+  nombre              String       @db.VarChar(200)
+  descripcion         String?      @db.Text
+  skuCode             String       @unique @map("sku_code") @db.VarChar(50)
+  stockActual         Decimal      @default(0) @map("stock_actual") @db.Decimal(12, 3)
+  stockMinimo         Decimal      @default(5) @map("stock_minimo") @db.Decimal(12, 3)
+  unidadMedida        UnidadMedida @map("unidad_medida")
+  cantidadPorCaja     Decimal?     @map("cantidad_por_caja") @db.Decimal(12, 3)
+  cantidadPorEmpaque  Decimal?     @map("cantidad_por_empaque") @db.Decimal(12, 3)
+  precioCompra        Decimal      @default(0) @map("precio_compra") @db.Decimal(12, 2)
+  precioUnitario      Decimal      @default(0) @map("precio_unitario") @db.Decimal(12, 2)
+  costoPorUnidad      Decimal      @default(0) @map("costo_por_unidad") @db.Decimal(12, 4)
+  fechaVencimiento    DateTime?    @map("fecha_vencimiento") @db.Date
+  ubicacionBodega     String?      @map("ubicacion_bodega") @db.VarChar(80)
+  categoriaId         Int          @map("categoria_id") @db.UnsignedInt
+  proveedorId         Int?         @map("proveedor_id") @db.UnsignedInt
+  activo              Boolean      @default(true)
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+  categoria           Categoria    @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  proveedor           Proveedor?   @relation(fields: [proveedorId], references: [id], onDelete: SetNull)
+  movimientos         Movimiento[]
+  solicitudes         SolicitudReposicion[]
+  conteoDetalles      ConteoDetalle[]
+  ordenDetalles       OrdenCompraDetalle[]
+  casoMateriales      CasoMaterial[]
+
+  @@index([categoriaId])
+  @@index([proveedorId])
+  @@index([skuCode])
+  @@index([fechaVencimiento])
+  @@map("productos")
+}
+
+model Movimiento {
+  id              Int            @id @default(autoincrement()) @db.UnsignedInt
+  productoId      Int            @map("producto_id") @db.UnsignedInt
+  usuarioId       Int            @map("usuario_id") @db.UnsignedInt
+  tipo            TipoMovimiento
+  cantidad        Decimal        @db.Decimal(12, 3)
+  stockAnterior   Decimal        @map("stock_anterior") @db.Decimal(12, 3)
+  stockPosterior  Decimal        @map("stock_posterior") @db.Decimal(12, 3)
+  motivo          String         @db.VarChar(255)
+  referencia      String?        @db.VarChar(100)
+  pacienteRef     String?        @map("paciente_ref") @db.VarChar(120)
+  casoId          Int?           @map("caso_id") @db.UnsignedInt
+  producto        Producto       @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  usuario         Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  caso            Caso?          @relation(fields: [casoId], references: [id], onDelete: SetNull)
+  fecha           DateTime       @default(now())
+
+  @@index([productoId])
+  @@index([usuarioId])
+  @@index([fecha])
+  @@index([tipo])
+  @@index([casoId])
+  @@map("movimientos")
+}
+
+/// Solicitudes de reposición del técnico dental
+model SolicitudReposicion {
+  id                 Int                @id @default(autoincrement()) @db.UnsignedInt
+  productoId         Int                @map("producto_id") @db.UnsignedInt
+  usuarioId          Int                @map("usuario_id") @db.UnsignedInt
+  cantidadSolicitada Int                @map("cantidad_solicitada")
+  prioridad          PrioridadSolicitud @default(media)
+  estado             EstadoSolicitud    @default(pendiente)
+  motivo             String             @db.VarChar(255)
+  notasAdmin         String?            @map("notas_admin") @db.Text
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  producto           Producto           @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  usuario            Usuario            @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([estado])
+  @@index([productoId])
+  @@map("solicitudes_reposicion")
+}
+
+/// Auditoría de acciones críticas
+model Auditoria {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  usuarioId  Int?     @map("usuario_id") @db.UnsignedInt
+  accion     String   @db.VarChar(80)
+  entidad    String   @db.VarChar(50)
+  entidadId  Int?     @map("entidad_id")
+  detalle    String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  usuario    Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId])
+  @@index([createdAt])
+  @@map("auditoria")
+}
+
+/// Conteo físico de inventario (toma física)
+model ConteoInventario {
+  id          Int            @id @default(autoincrement()) @db.UnsignedInt
+  usuarioId   Int            @map("usuario_id") @db.UnsignedInt
+  estado      EstadoConteo   @default(en_progreso)
+  notas       String?        @db.Text
+  createdAt   DateTime       @default(now()) @map("created_at")
+  completedAt DateTime?      @map("completed_at")
+  usuario     Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles    ConteoDetalle[]
+
+  @@index([estado])
+  @@map("conteos_inventario")
+}
+
+model ConteoDetalle {
+  id            Int              @id @default(autoincrement()) @db.UnsignedInt
+  conteoId      Int              @map("conteo_id") @db.UnsignedInt
+  productoId    Int              @map("producto_id") @db.UnsignedInt
+  stockSistema  Int              @map("stock_sistema")
+  stockFisico   Int?             @map("stock_fisico")
+  diferencia    Int?
+  ajustado      Boolean          @default(false)
+  conteo        ConteoInventario @relation(fields: [conteoId], references: [id], onDelete: Cascade)
+  producto      Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@unique([conteoId, productoId])
+  @@map("conteo_detalles")
+}
+
+/// Órdenes de compra a proveedores
+model OrdenCompra {
+  id          Int                 @id @default(autoincrement()) @db.UnsignedInt
+  numero      String              @unique @db.VarChar(30)
+  proveedorId Int                 @map("proveedor_id") @db.UnsignedInt
+  usuarioId   Int                 @map("usuario_id") @db.UnsignedInt
+  estado      EstadoOrdenCompra   @default(borrador)
+  total       Decimal             @default(0) @db.Decimal(14, 2)
+  notas       String?             @db.Text
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+  proveedor   Proveedor           @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
+  usuario     Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles    OrdenCompraDetalle[]
+
+  @@index([estado])
+  @@map("ordenes_compra")
+}
+
+model OrdenCompraDetalle {
+  id             Int         @id @default(autoincrement()) @db.UnsignedInt
+  ordenId        Int         @map("orden_id") @db.UnsignedInt
+  productoId     Int         @map("producto_id") @db.UnsignedInt
+  cantidad       Int
+  precioUnitario Decimal     @map("precio_unitario") @db.Decimal(12, 2)
+  recibido       Int         @default(0)
+  orden          OrdenCompra @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  producto       Producto    @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@map("orden_compra_detalles")
+}
+
+/// Notificaciones in-app
+model Notificacion {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  usuarioId Int      @map("usuario_id") @db.UnsignedInt
+  tipo      String   @db.VarChar(50)
+  titulo    String   @db.VarChar(150)
+  mensaje   String   @db.VarChar(500)
+  leida     Boolean  @default(false)
+  link      String?  @db.VarChar(200)
+  createdAt DateTime @default(now()) @map("created_at")
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, leida])
+  @@map("notificaciones")
+}
+
+/// Pacientes del laboratorio dental
+model Paciente {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  nombre      String   @db.VarChar(180)
+  identificacion String? @db.VarChar(50)
+  telefono    String?  @db.VarChar(30)
+  email       String?  @db.VarChar(180)
+  direccion   String?  @db.Text
+  odontologo  String?  @db.VarChar(150)
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  casos       Caso[]
+
+  @@index([identificacion])
+  @@index([activo])
+  @@map("pacientes")
+}
+
+/// Casos o trabajos dentales
+model Caso {
+  id              Int          @id @default(autoincrement()) @db.UnsignedInt
+  codigo          String       @unique @map("codigo") @db.VarChar(50)
+  pacienteId      Int          @map("paciente_id") @db.UnsignedInt
+  descripcion     String       @db.Text
+  estado          EstadoCaso   @default(pendiente)
+  valorTotal      Decimal      @default(0) @map("valor_total") @db.Decimal(14, 2)
+  costoMateriales Decimal      @default(0) @map("costo_materiales") @db.Decimal(14, 2)
+  costoProduccion Decimal      @default(0) @map("costo_produccion") @db.Decimal(14, 2)
+  gananciaProyectada Decimal   @default(0) @map("ganancia_proyectada") @db.Decimal(14, 2)
+  fechaEntrega    DateTime?    @map("fecha_entrega")
+  fechaInicio     DateTime     @default(now()) @map("fecha_inicio")
+  fechaCompletado DateTime?    @map("fecha_completado")
+  notas           String?      @db.Text
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  paciente        Paciente     @relation(fields: [pacienteId], references: [id], onDelete: Restrict)
+  materiales      CasoMaterial[]
+  movimientos     Movimiento[]
+  abonos          Abono[]
+  cuenta          Cuenta?
+
+  @@index([pacienteId])
+  @@index([estado])
+  @@index([fechaEntrega])
+  @@map("casos")
+}
+
+/// Materiales utilizados en cada caso
+model CasoMaterial {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  casoId      Int      @map("caso_id") @db.UnsignedInt
+  productoId  Int      @map("producto_id") @db.UnsignedInt
+  cantidad    Decimal  @db.Decimal(12, 3)
+  costoUnitario Decimal @map("costo_unitario") @db.Decimal(12, 4)
+  costoTotal  Decimal  @map("costo_total") @db.Decimal(14, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+  caso        Caso     @relation(fields: [casoId], references: [id], onDelete: Cascade)
+  producto    Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@unique([casoId, productoId])
+  @@index([casoId])
+  @@map("caso_materiales")
+}
+
+/// Transacciones financieras generales
+model Transaccion {
+  id          Int             @id @default(autoincrement()) @db.UnsignedInt
+  tipo        TipoTransaccion
+  monto       Decimal         @db.Decimal(14, 2)
+  descripcion String          @db.VarChar(255)
+  referencia  String?         @db.VarChar(100)
+  categoria   String?         @db.VarChar(80)
+  usuarioId   Int?            @map("usuario_id") @db.UnsignedInt
+  fecha       DateTime        @default(now())
+  createdAt   DateTime        @default(now()) @map("created_at")
+  usuario     Usuario?        @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([tipo])
+  @@index([fecha])
+  @@index([usuarioId])
+  @@map("transacciones")
+}
+
+/// Cuentas por cobrar o por pagar
+model Cuenta {
+  id              Int         @id @default(autoincrement()) @db.UnsignedInt
+  casoId          Int         @unique @map("caso_id") @db.UnsignedInt
+  tipo            TipoCuenta
+  valorTotal      Decimal     @map("valor_total") @db.Decimal(14, 2)
+  valorPagado     Decimal     @default(0) @map("valor_pagado") @db.Decimal(14, 2)
+  saldoPendiente  Decimal     @map("saldo_pendiente") @db.Decimal(14, 2)
+  fechaVencimiento DateTime?  @map("fecha_vencimiento")
+  estado          String      @default("pendiente") @db.VarChar(30)
+  notas           String?     @db.Text
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  caso            Caso        @relation(fields: [casoId], references: [id], onDelete: Cascade)
+  abonos          Abono[]
+
+  @@index([tipo])
+  @@index([estado])
+  @@index([fechaVencimiento])
+  @@map("cuentas")
+}
+
+/// Abonos a cuentas
+model Abono {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  cuentaId    Int      @map("cuenta_id") @db.UnsignedInt
+  casoId      Int      @map("caso_id") @db.UnsignedInt
+  monto       Decimal  @db.Decimal(14, 2)
+  metodo      String   @db.VarChar(50)
+  referencia  String?  @db.VarChar(100)
+  notas       String?  @db.Text
+  fecha       DateTime @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
+  cuenta      Cuenta   @relation(fields: [cuentaId], references: [id], onDelete: Cascade)
+  caso        Caso     @relation(fields: [casoId], references: [id], onDelete: Cascade)
+
+  @@index([cuentaId])
+  @@index([casoId])
+  @@index([fecha])
+  @@map("abonos")
+}
+
+/// Movimientos de caja
+model Caja {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  tipo        String   @db.VarChar(30)
+  monto       Decimal  @db.Decimal(14, 2)
+  saldoAnterior Decimal @map("saldo_anterior") @db.Decimal(14, 2)
+  saldoPosterior Decimal @map("saldo_posterior") @db.Decimal(14, 2)
+  descripcion String   @db.VarChar(255)
+  referencia  String?  @db.VarChar(100)
+  transaccionId Int?   @map("transaccion_id") @db.UnsignedInt
+  abonoId     Int?     @map("abono_id") @db.UnsignedInt
+  fecha       DateTime @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tipo])
+  @@index([fecha])
+  @@map("caja")
+}
