@@ -5,9 +5,11 @@ import { ClientLayout } from '@/components/ClientLayout';
 import { useSession } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
 import { formatMoney } from '@/lib/format';
-import { Download, FileBarChart } from 'lucide-react';
+import { Download, FileBarChart, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function ReportesPage() {
+  const router = useRouter();
   const { user, loading, tiene } = useSession();
   const [resumen, setResumen] = useState({ totalProductos: 0, valorTotal: 0, movimientosMes: 0, solicitudesPendientes: 0 });
   const [consumo, setConsumo] = useState<{ producto?: { nombre: string; skuCode: string }; totalConsumido: number }[]>([]);
@@ -24,9 +26,17 @@ export default function ReportesPage() {
   return (
     <ClientLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Reportes</h1>
-          <p className="text-sm text-slate-500">Exportación y análisis de inventario — Dentales Liberato</p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold">Reportes</h1>
+            <p className="text-sm text-slate-500">Exportación y análisis de inventario — Dentales Liberato</p>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

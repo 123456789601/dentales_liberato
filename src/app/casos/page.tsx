@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Edit, CheckCircle, Clock, AlertCircle, DollarSign } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, Search, Edit, CheckCircle, Clock, AlertCircle, DollarSign, Image as ImageIcon, CreditCard, ArrowLeft } from 'lucide-react';
 
 interface Caso {
   id: number;
@@ -13,13 +14,25 @@ interface Caso {
   costoMateriales: number;
   gananciaProyectada: number;
   fechaEntrega: string;
+  imagen?: string;
   paciente: {
     id: number;
     nombre: string;
   };
+  fase?: {
+    id: number;
+    nombre: string;
+    color?: string;
+  };
+  abonos: Array<{
+    id: number;
+    monto: number;
+    fecha: string;
+  }>;
 }
 
 export default function CasosPage() {
+  const router = useRouter();
   const [casos, setCasos] = useState<Caso[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,9 +116,17 @@ export default function CasosPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Casos</h1>
-            <p className="mt-1 text-sm text-gray-500">Gestión de trabajos dentales</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Casos</h1>
+              <p className="mt-1 text-sm text-gray-500">Gestión de trabajos dentales</p>
+            </div>
           </div>
           <Link
             href="/casos/nuevo"
@@ -158,10 +179,16 @@ export default function CasosPage() {
                       Paciente
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Fase
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Estado
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Valor Total
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Abonos
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ganancia
@@ -175,13 +202,34 @@ export default function CasosPage() {
                   {casos.map((caso) => (
                     <tr key={caso.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{caso.codigo}</div>
+                        <div className="flex items-center gap-2">
+                          {caso.imagen && (
+                            <img
+                              src={caso.imagen}
+                              alt=""
+                              className="w-8 h-8 object-cover rounded border border-gray-200"
+                            />
+                          )}
+                          <div className="text-sm font-medium text-gray-900">{caso.codigo}</div>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900">{caso.descripcion}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">{caso.paciente.nombre}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {caso.fase ? (
+                          <span
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white"
+                            style={{ backgroundColor: caso.fase.color || '#3B82F6' }}
+                          >
+                            {caso.fase.nombre}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">Sin fase</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
@@ -194,6 +242,14 @@ export default function CasosPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="text-sm font-medium text-gray-900">
                           {formatearMoneda(caso.valorTotal)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <CreditCard className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-900">
+                            {caso.abonos.length}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Edit, Trash2, Phone, Mail, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, Search, Edit, Trash2, Phone, Mail, User, ArrowLeft } from 'lucide-react';
 
 interface Paciente {
   id: number;
@@ -15,6 +16,7 @@ interface Paciente {
 }
 
 export default function PacientesPage() {
+  const router = useRouter();
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,9 +80,17 @@ export default function PacientesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Pacientes</h1>
-            <p className="mt-1 text-sm text-gray-500">Gestión de pacientes del laboratorio dental</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Pacientes</h1>
+              <p className="mt-1 text-sm text-gray-500">Gestión de pacientes del laboratorio dental</p>
+            </div>
           </div>
           <Link
             href="/pacientes/nuevo"

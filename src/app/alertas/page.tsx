@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { ClientLayout } from '@/components/ClientLayout';
-import { AlertTriangle, CalendarClock, Package } from 'lucide-react';
+import { AlertTriangle, CalendarClock, Package, ArrowLeft } from 'lucide-react';
 import { formatDate, formatMoney } from '@/lib/format';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { SemaforoEstado } from '@/lib/inventory';
 
 interface ProductoAlerta {
@@ -22,6 +23,7 @@ interface ProductoAlerta {
 }
 
 export default function AlertasPage() {
+  const router = useRouter();
   const [criticos, setCriticos] = useState<ProductoAlerta[]>([]);
   const [porVencer, setPorVencer] = useState<ProductoAlerta[]>([]);
   const [resumen, setResumen] = useState({ criticos: 0, porVencer: 0, total: 0 });
@@ -39,9 +41,17 @@ export default function AlertasPage() {
   return (
     <ClientLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Alertas de inventario</h1>
-          <p className="text-sm text-slate-500">Stock crítico y productos próximos a vencer</p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">Alertas de inventario</h1>
+            <p className="text-sm text-slate-500">Stock crítico y productos próximos a vencer</p>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">

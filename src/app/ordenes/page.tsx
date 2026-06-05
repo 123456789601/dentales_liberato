@@ -5,11 +5,13 @@ import { ClientLayout } from '@/components/ClientLayout';
 import { useSession } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
 import { formatMoney } from '@/lib/format';
-import { Plus, ShoppingCart } from 'lucide-react';
+import { Plus, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type OrdenItemForm = { productoId: string; cantidad: number; precio: number };
 
 export default function OrdenesPage() {
+  const router = useRouter();
   const { loading, tiene } = useSession();
   const [ordenes, setOrdenes] = useState<{ id: number; numero: string; estado: string; total: number; proveedor: { nombre: string }; createdAt: string }[]>([]);
   const [proveedores, setProveedores] = useState<{ id: number; nombre: string }[]>([]);
@@ -62,9 +64,17 @@ export default function OrdenesPage() {
     <ClientLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center flex-wrap gap-3">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2"><ShoppingCart className="h-7 w-7 text-clinica-600" /> Órdenes de compra</h1>
-            <p className="text-sm text-slate-500">Pedidos a proveedores con recepción automática de stock</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2"><ShoppingCart className="h-7 w-7 text-clinica-600" /> Órdenes de compra</h1>
+              <p className="text-sm text-slate-500">Pedidos a proveedores con recepción automática de stock</p>
+            </div>
           </div>
           {tiene(PERMISOS.ORDENES_GESTIONAR) && (
             <button type="button" onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 rounded-lg bg-clinica-600 px-4 py-2 text-sm font-semibold text-white">

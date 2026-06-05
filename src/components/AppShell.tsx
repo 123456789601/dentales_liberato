@@ -5,7 +5,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Package, ArrowLeftRight, HelpCircle, LogOut, Stethoscope,
   AlertTriangle, ClipboardList, FileBarChart, Users, ClipboardCheck, ShoppingCart,
-  Truck, Tags, Shield, ScrollText, User, Search,
+  Truck, Tags, Shield, ScrollText, User, Search, Wallet, UserCircle, FileText,
+  Layers,
 } from 'lucide-react';
 import { SessionUser } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
@@ -35,6 +36,10 @@ export function AppShell({ children, user, solicitudesPendientes = 0 }: AppShell
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/inventario', label: 'Inventario', icon: Package, permiso: PERMISOS.INVENTARIO_VER },
     { href: '/movimientos', label: 'Movimientos', icon: ArrowLeftRight, permiso: PERMISOS.MOVIMIENTOS_VER },
+    { href: '/finanzas', label: 'Finanzas', icon: Wallet, permiso: PERMISOS.FINANZAS_VER },
+    { href: '/pacientes', label: 'Pacientes', icon: UserCircle, permiso: PERMISOS.PACIENTES_VER },
+    { href: '/casos', label: 'Casos', icon: FileText, permiso: PERMISOS.CASOS_VER },
+    { href: '/fases-casos', label: 'Fases de Casos', icon: Layers, permiso: PERMISOS.CASOS_EDITAR },
     { href: '/conteos', label: 'Conteo físico', icon: ClipboardCheck, permiso: PERMISOS.CONTEOS_VER },
     { href: '/ordenes', label: 'Órdenes compra', icon: ShoppingCart, permiso: PERMISOS.ORDENES_VER },
     { href: '/alertas', label: 'Alertas', icon: AlertTriangle, permiso: PERMISOS.ALERTAS_VER },
@@ -61,7 +66,7 @@ export function AppShell({ children, user, solicitudesPendientes = 0 }: AppShell
     <div className="flex min-h-screen bg-slate-50">
       <aside className="hidden w-60 flex-col border-r border-slate-200 bg-white xl:flex xl:w-64">
         <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
-          <Stethoscope className="h-7 w-7 text-clinica-600 shrink-0" />
+          <img src="/logo.jpg" alt="Dentales Liberato" className="h-7 w-7 object-contain shrink-0" />
           <div className="min-w-0">
             <p className="font-bold text-clinica-800 truncate">Dentales Liberato</p>
             <p className="text-xs text-slate-400 truncate">{user.rolNombre}</p>

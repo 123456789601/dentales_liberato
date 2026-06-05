@@ -1,4 +1,4 @@
-np// =============================================================================
+ // =============================================================================
 // Dentales Liberato - Esquema Prisma ORM v2
 // RBAC: roles y permisos en tablas separadas
 // =============================================================================
@@ -69,7 +69,7 @@ enum EstadoConteo {
 }
 
 enum EstadoOrdenCompra {
-  borrador
+  pendiente
   enviada
   recibida
   cancelada
@@ -78,7 +78,7 @@ enum EstadoOrdenCompra {
 /// Roles del sistema (tabla separada por seguridad)
 model Rol {
   id          Int          @id @default(autoincrement()) @db.UnsignedInt
-  codigo      String       @unique @db.VarChar(50)
+  codigo      String       @unique @default("rol_temporal") @db.VarChar(50)
   nombre      String       @db.VarChar(100)
   descripcion String?      @db.VarChar(255)
   activo      Boolean      @default(true)
@@ -293,7 +293,7 @@ model OrdenCompra {
   numero      String              @unique @db.VarChar(30)
   proveedorId Int                 @map("proveedor_id") @db.UnsignedInt
   usuarioId   Int                 @map("usuario_id") @db.UnsignedInt
-  estado      EstadoOrdenCompra   @default(borrador)
+  estado      EstadoOrdenCompra   @default(pendiente)
   total       Decimal             @default(0) @db.Decimal(14, 2)
   notas       String?             @db.Text
   createdAt   DateTime            @default(now()) @map("created_at")
@@ -339,7 +339,7 @@ model Notificacion {
 model Paciente {
   id          Int      @id @default(autoincrement()) @db.UnsignedInt
   nombre      String   @db.VarChar(180)
-  identificacion String? @db.VarChar(50)
+  identificacion String? @unique @db.VarChar(50)
   telefono    String?  @db.VarChar(30)
   email       String?  @db.VarChar(180)
   direccion   String?  @db.Text
@@ -349,9 +349,25 @@ model Paciente {
   updatedAt   DateTime @updatedAt @map("updated_at")
   casos       Caso[]
 
-  @@index([identificacion])
   @@index([activo])
   @@map("pacientes")
+}
+
+/// Fases o etapas de los casos dentales
+model FaseCaso {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  nombre      String   @db.VarChar(100)
+  descripcion String?  @db.Text
+  orden       Int      @default(0)
+  color       String?  @db.VarChar(7) // Código de color hex para la fase
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  casos       Caso[]
+
+  @@index([activo])
+  @@index([orden])
+  @@map("fases_caso")
 }
 
 /// Casos o trabajos dentales
@@ -369,9 +385,13 @@ model Caso {
   fechaInicio     DateTime     @default(now()) @map("fecha_inicio")
   fechaCompletado DateTime?    @map("fecha_completado")
   notas           String?      @db.Text
+  imagen          String?      @db.VarChar(500) // URL de la imagen del caso
+  faseId          Int?         @map("fase_id") @db.UnsignedInt
+  clinica         String?      @db.VarChar(200) // Nombre de la clínica de origen
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @updatedAt @map("updated_at")
   paciente        Paciente     @relation(fields: [pacienteId], references: [id], onDelete: Restrict)
+  fase            FaseCaso?    @relation(fields: [faseId], references: [id], onDelete: SetNull)
   materiales      CasoMaterial[]
   movimientos     Movimiento[]
   abonos          Abono[]
@@ -380,6 +400,7 @@ model Caso {
   @@index([pacienteId])
   @@index([estado])
   @@index([fechaEntrega])
+  @@index([faseId])
   @@map("casos")
 }
 

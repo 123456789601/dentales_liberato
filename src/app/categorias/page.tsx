@@ -4,9 +4,11 @@ import { useEffect, useState, FormEvent } from 'react';
 import { ClientLayout } from '@/components/ClientLayout';
 import { useSession } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
-import { Tags, Plus } from 'lucide-react';
+import { Tags, Plus, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function CategoriasPage() {
+  const router = useRouter();
   const { loading, tiene } = useSession();
   const [cats, setCats] = useState<{ id: number; nombre: string; descripcion: string | null; _count: { productos: number } }[]>([]);
   const [nombre, setNombre] = useState('');
@@ -26,7 +28,15 @@ export default function CategoriasPage() {
   return (
     <ClientLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Tags className="h-7 w-7 text-clinica-600" /> Categorías</h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><Tags className="h-7 w-7 text-clinica-600" /> Categorías</h1>
+        </div>
         {tiene(PERMISOS.CATEGORIAS_GESTIONAR) && (
           <form onSubmit={crear} className="flex flex-wrap gap-2 rounded-xl border bg-white p-4 shadow-sm">
             <input required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre categoría" className="flex-1 min-w-[200px] rounded-lg border px-3 py-2 text-sm" />

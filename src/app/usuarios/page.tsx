@@ -4,12 +4,14 @@ import { useEffect, useState, FormEvent } from 'react';
 import { ClientLayout } from '@/components/ClientLayout';
 import { useSession } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
-import { Plus, UserCog } from 'lucide-react';
+import { Plus, UserCog, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Rol { id: number; codigo: string; nombre: string }
 interface UsuarioRow { id: number; nombre: string; email: string; activo: boolean; rol: Rol }
 
 export default function UsuariosPage() {
+  const router = useRouter();
   const { user, loading, tiene } = useSession();
   const [usuarios, setUsuarios] = useState<UsuarioRow[]>([]);
   const [roles, setRoles] = useState<Rol[]>([]);
@@ -46,9 +48,17 @@ export default function UsuariosPage() {
     <ClientLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2"><UserCog className="h-7 w-7 text-clinica-600" /> Usuarios</h1>
-            <p className="text-sm text-slate-500">Gestión de personal y asignación de roles</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2"><UserCog className="h-7 w-7 text-clinica-600" /> Usuarios</h1>
+              <p className="text-sm text-slate-500">Gestión de personal y asignación de roles</p>
+            </div>
           </div>
           {tiene(PERMISOS.USUARIOS_GESTIONAR) && (
             <button type="button" onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 rounded-lg bg-clinica-600 px-4 py-2 text-sm font-semibold text-white">

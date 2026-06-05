@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { ClientLayout } from '@/components/ClientLayout';
 import { useSession } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
-import { Shield } from 'lucide-react';
+import { Shield, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Rol { id: number; codigo: string; nombre: string; permisos: { id: number; codigo: string; nombre: string; modulo: string }[]; usuariosCount: number }
 interface Permiso { id: number; codigo: string; nombre: string; modulo: string }
 
 export default function RolesPage() {
+  const router = useRouter();
   const { loading, tiene } = useSession();
   const [roles, setRoles] = useState<Rol[]>([]);
   const [permisos, setPermisos] = useState<Permiso[]>([]);
@@ -51,7 +53,15 @@ export default function RolesPage() {
   return (
     <ClientLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Shield className="h-7 w-7 text-clinica-600" /> Roles y permisos</h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><Shield className="h-7 w-7 text-clinica-600" /> Roles y permisos</h1>
+        </div>
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-2">
             <p className="text-sm font-medium text-slate-500">Roles</p>

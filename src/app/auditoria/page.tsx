@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { ClientLayout } from '@/components/ClientLayout';
 import { formatDate } from '@/lib/format';
-import { ScrollText } from 'lucide-react';
+import { ScrollText, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function AuditoriaPage() {
+  const router = useRouter();
   const [logs, setLogs] = useState<{ id: number; accion: string; entidad: string; detalle: string | null; createdAt: string; usuario: { nombre: string } | null }[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -20,7 +22,15 @@ export default function AuditoriaPage() {
   return (
     <ClientLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><ScrollText className="h-7 w-7 text-clinica-600" /> Auditoría del sistema</h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><ScrollText className="h-7 w-7 text-clinica-600" /> Auditoría del sistema</h1>
+        </div>
         <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">

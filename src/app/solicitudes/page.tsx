@@ -4,7 +4,8 @@ import { useEffect, useState, FormEvent } from 'react';
 import { ClientLayout } from '@/components/ClientLayout';
 import { useSession } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
-import { Plus, Check, X } from 'lucide-react';
+import { Plus, Check, X, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Solicitud {
   id: number;
@@ -18,6 +19,7 @@ interface Solicitud {
 }
 
 export default function SolicitudesPage() {
+  const router = useRouter();
   const { user, loading, tiene } = useSession();
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [productos, setProductos] = useState<{ id: number; nombre: string; skuCode: string }[]>([]);
@@ -73,9 +75,17 @@ export default function SolicitudesPage() {
     <ClientLayout>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold">Solicitudes de reposición</h1>
-            <p className="text-sm text-slate-500">Pida insumos cuando el stock esté bajo</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold">Solicitudes de reposición</h1>
+              <p className="text-sm text-slate-500">Pida insumos cuando el stock esté bajo</p>
+            </div>
           </div>
           {tiene(PERMISOS.SOLICITUDES_CREAR) && (
             <button type="button" onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 rounded-lg bg-clinica-600 px-4 py-2 text-sm font-semibold text-white">

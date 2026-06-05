@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { ClientLayout } from '@/components/ClientLayout';
 import { useSession } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
-import { Plus, ClipboardCheck } from 'lucide-react';
+import { Plus, ClipboardCheck, ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/format';
+import { useRouter } from 'next/navigation';
 
 export default function ConteosPage() {
+  const router = useRouter();
   const { loading, tiene } = useSession();
   const [conteos, setConteos] = useState<{ id: number; estado: string; createdAt: string; usuario: { nombre: string }; _count: { detalles: number } }[]>([]);
 
@@ -40,11 +42,19 @@ export default function ConteosPage() {
     <ClientLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center flex-wrap gap-3">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <ClipboardCheck className="h-7 w-7 text-clinica-600" /> Conteo físico
-            </h1>
-            <p className="text-sm text-slate-500">Toma física de inventario y ajustes automáticos</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                <ClipboardCheck className="h-7 w-7 text-clinica-600" /> Conteo físico
+              </h1>
+              <p className="text-sm text-slate-500">Toma física de inventario y ajustes automáticos</p>
+            </div>
           </div>
           {tiene(PERMISOS.CONTEOS_GESTIONAR) && (
             <button type="button" onClick={nuevoConteo} className="flex items-center gap-2 rounded-lg bg-clinica-600 px-4 py-2 text-sm font-semibold text-white hover:bg-clinica-700">

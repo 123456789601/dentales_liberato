@@ -6,9 +6,11 @@ import { InventoryTable } from '@/components/InventoryTable';
 import { ProductFormModal, ProductoEdit } from '@/components/ProductFormModal';
 import { PERMISOS } from '@/lib/permissions';
 import { useSession } from '@/hooks/useSession';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export function InventarioClient() {
+  const router = useRouter();
   const { user, loading, tiene } = useSession();
   const [refreshKey, setRefreshKey] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
@@ -24,9 +26,17 @@ export function InventarioClient() {
     <ClientLayout>
       <div className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">Inventario</h1>
-            <p className="text-sm text-slate-500">Control completo de insumos — Dentales Liberato</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800">Inventario</h1>
+              <p className="text-sm text-slate-500">Control completo de insumos — Dentales Liberato</p>
+            </div>
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={reload} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-slate-50">

@@ -36,7 +36,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const data = await request.json();
+    const formData = await request.formData();
+    
+    // Convertir FormData a objeto
+    const data: any = {};
+    formData.forEach((value, key) => {
+      if (key === 'imagen') {
+        // Manejar el archivo de imagen por separado
+        data.imagenFile = value;
+      } else {
+        data[key] = value;
+      }
+    });
+
+    // Convertir valores numéricos
+    if (data.valorTotal) data.valorTotal = parseFloat(data.valorTotal);
+    if (data.pacienteId) data.pacienteId = parseInt(data.pacienteId, 10);
+    if (data.faseId) data.faseId = parseInt(data.faseId, 10);
+
     const caso = await casosController.crearCaso(data);
     return NextResponse.json(caso, { status: 201 });
   } catch (error) {

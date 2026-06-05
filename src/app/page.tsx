@@ -14,9 +14,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">DL</span>
-              </div>
+              <img src="/logo.jpg" alt="Dentales Liberato" className="w-10 h-10 object-contain" />
               <span className="text-xl font-bold text-gray-800">Dentales Liberato</span>
             </div>
 
@@ -98,8 +96,8 @@ export default function LandingPage() {
               <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-8 shadow-2xl">
                 <div className="bg-white rounded-2xl p-6 space-y-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Shield className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center p-1">
+                      <img src="/logo.jpg" alt="Dentales Liberato" className="w-full h-full object-contain" />
                     </div>
                     <div>
                       <div className="font-semibold text-gray-800">Sistema ERP Integral</div>
@@ -356,9 +354,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">DL</span>
-                </div>
+                <img src="/logo.jpg" alt="Dentales Liberato" className="w-10 h-10 object-contain" />
                 <span className="text-xl font-bold">Dentales Liberato</span>
               </div>
               <p className="text-gray-400 text-sm">

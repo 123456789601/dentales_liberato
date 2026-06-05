@@ -9,6 +9,7 @@ export async function obtenerCasos() {
   return await prisma.caso.findMany({
     include: {
       paciente: true,
+      fase: true,
       materiales: {
         include: {
           producto: true,
@@ -26,6 +27,7 @@ export async function obtenerCasoPorId(id: number) {
     where: { id },
     include: {
       paciente: true,
+      fase: true,
       materiales: {
         include: {
           producto: true,
@@ -46,18 +48,54 @@ export async function obtenerCasoPorId(id: number) {
 }
 
 export async function crearCaso(data: {
-  codigo: string;
+  codigo?: string;
   pacienteId: number;
   descripcion: string;
-  valorTotal: number;
+  valorTotal?: number;
   fechaEntrega?: Date;
   notas?: string;
+  imagen?: string;
+  imagenFile?: File;
+  faseId?: number;
+  estado?: string;
+  clinica?: string;
 }) {
+  // Manejar el archivo de imagen si está presente
+  let imagenUrl: string | undefined = undefined;
+  if (data.imagenFile) {
+    // Convertir el archivo a base64
+    const bytes = await data.imagenFile.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    imagenUrl = `data:${data.imagenFile.type};base64,${buffer.toString('base64')}`;
+  } else if (data.imagen) {
+    imagenUrl = data.imagen;
+  }
+
+  // Generar código si no se proporciona
+  const codigo = data.codigo || `CAS-${Date.now()}`;
+
+  // Mapear el estado al enum correcto
+  const estadoMap: Record<string, 'pendiente' | 'en_progreso' | 'completado' | 'cancelado'> = {
+    'pendiente': 'pendiente',
+    'en_progreso': 'en_progreso',
+    'completado': 'completado',
+    'cancelado': 'cancelado',
+  };
+  const estado = estadoMap[data.estado || 'pendiente'] || 'pendiente';
+
   // Crear el caso
   const caso = await prisma.caso.create({
     data: {
-      ...data,
-      estado: 'pendiente',
+      codigo,
+      pacienteId: data.pacienteId,
+      descripcion: data.descripcion,
+      valorTotal: data.valorTotal || 0,
+      fechaEntrega: data.fechaEntrega,
+      notas: data.notas,
+      imagen: imagenUrl,
+      faseId: data.faseId,
+      estado,
+      clinica: data.clinica,
     },
   });
 
@@ -66,9 +104,9 @@ export async function crearCaso(data: {
     data: {
       casoId: caso.id,
       tipo: 'por_cobrar',
-      valorTotal: data.valorTotal,
+      valorTotal: data.valorTotal || 0,
       valorPagado: 0,
-      saldoPendiente: data.valorTotal,
+      saldoPendiente: data.valorTotal || 0,
       fechaVencimiento: data.fechaEntrega,
       estado: 'pendiente',
     },
@@ -84,6 +122,9 @@ export async function actualizarCaso(id: number, data: {
   fechaEntrega?: Date;
   fechaCompletado?: Date;
   notas?: string;
+  imagen?: string;
+  faseId?: number;
+  clinica?: string;
 }) {
   return await prisma.caso.update({
     where: { id },
@@ -192,6 +233,9 @@ export async function completarCaso(id: number) {
       estado: 'completado',
       fechaCompletado: new Date(),
     },
+    include: {
+      cuenta: true,
+    },
   });
 
   // Actualizar cuenta si está completamente pagada
@@ -222,6 +266,7 @@ export async function buscarCasos(query: string) {
     },
     include: {
       paciente: true,
+      fase: true,
     },
     orderBy: { createdAt: 'desc' },
   });

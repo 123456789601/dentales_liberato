@@ -60,8 +60,8 @@ export function LoginForm() {
     <div className="w-full max-w-md">
       {/* Logo y branding */}
       <div className="text-center mb-8">
-        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/30 mb-4">
-          <Shield className="w-10 h-10 text-white" />
+        <div className="mx-auto w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/30 mb-4 p-2">
+          <img src="/logo.jpg" alt="Dentales Liberato" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Dentales Liberato

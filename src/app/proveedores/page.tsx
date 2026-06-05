@@ -4,9 +4,11 @@ import { useEffect, useState, FormEvent } from 'react';
 import { ClientLayout } from '@/components/ClientLayout';
 import { useSession } from '@/hooks/useSession';
 import { PERMISOS } from '@/lib/permissions';
-import { Truck, Plus } from 'lucide-react';
+import { Truck, Plus, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function ProveedoresPage() {
+  const router = useRouter();
   const { loading, tiene } = useSession();
   const [lista, setLista] = useState<{ id: number; nombre: string; contacto: string | null; telefono: string | null; email: string | null; _count: { productos: number } }[]>([]);
   const [form, setForm] = useState({ nombre: '', contacto: '', telefono: '', email: '' });
@@ -27,7 +29,15 @@ export default function ProveedoresPage() {
     <ClientLayout>
       <div className="space-y-6">
         <div className="flex justify-between">
-          <div><h1 className="text-2xl font-bold flex items-center gap-2"><Truck className="h-7 w-7 text-clinica-600" /> Proveedores</h1></div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <h1 className="text-2xl font-bold flex items-center gap-2"><Truck className="h-7 w-7 text-clinica-600" /> Proveedores</h1>
+          </div>
           {tiene(PERMISOS.PROVEEDORES_GESTIONAR) && (
             <button type="button" onClick={() => setShow(!show)} className="flex items-center gap-2 rounded-lg bg-clinica-600 px-4 py-2 text-sm text-white"><Plus className="h-4 w-4" /> Nuevo</button>
           )}
