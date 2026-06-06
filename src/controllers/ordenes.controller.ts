@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { JwtPayload } from '@/lib/auth';
 import { registrarAuditoria } from '@/lib/auditoria';
-import { TipoMovimiento } from '@prisma/client';
+import { TipoMovimiento, EstadoOrdenCompra } from '@prisma/client';
 
 function generarNumeroOrden(): string {
   const fecha = new Date();
@@ -27,8 +27,9 @@ const crearSchema = z.object({
 
 export async function listarOrdenes(req: NextRequest): Promise<NextResponse> {
   const estado = new URL(req.url).searchParams.get('estado');
+  const where = estado ? { estado: estado as EstadoOrdenCompra } : undefined;
   const ordenes = await prisma.ordenCompra.findMany({
-    where: estado ? { estado: estado as 'borrador' | 'enviada' | 'recibida' | 'cancelada' } : {},
+    where,
     include: {
       proveedor: true,
       usuario: { select: { nombre: true } },
@@ -101,7 +102,7 @@ export async function cambiarEstadoOrden(
 
   const orden = await prisma.ordenCompra.update({
     where: { id },
-    data: { estado },
+    data: { estado: estado as EstadoOrdenCompra },
     include: { detalles: { include: { producto: true } } },
   });
 
@@ -115,14 +116,14 @@ export async function cambiarEstadoOrden(
         const producto = await tx.producto.findUnique({ where: { id: d.productoId } });
         if (!producto) continue;
 
-        const nuevoStock = producto.stockActual + pendiente;
+        const nuevoStock = Number(producto.stockActual) + pendiente;
         await tx.movimiento.create({
           data: {
             productoId: d.productoId,
             usuarioId: parseInt(user.sub, 10),
             tipo: TipoMovimiento.Entrada,
             cantidad: pendiente,
-            stockAnterior: producto.stockActual,
+            stockAnterior: Number(producto.stockActual),
             stockPosterior: nuevoStock,
             motivo: `Recepción orden ${orden.numero}`,
             referencia: orden.numero,
