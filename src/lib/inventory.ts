@@ -82,7 +82,7 @@ export async function calcularValorTotalInventario(): Promise<number> {
   });
 
   return productos.reduce(
-    (total, p) => total + calcularValorProducto(p.stockActual, p.precioUnitario),
+    (total, p) => total + calcularValorProducto(Number(p.stockActual), Number(p.precioUnitario)),
     0
   );
 }
@@ -91,15 +91,15 @@ export async function calcularValorTotalInventario(): Promise<number> {
 export function enriquecerProductos(productos: ProductoConCategoria[]): ProductoConAlerta[] {
   return productos.map((p) => {
     const { semaforo, diasParaVencer } = calcularSemaforo(
-      p.stockActual,
-      p.stockMinimo,
+      Number(p.stockActual),
+      Number(p.stockMinimo),
       p.fechaVencimiento
     );
     return {
       ...p,
       semaforo,
       diasParaVencer,
-      valorEnBodega: calcularValorProducto(p.stockActual, p.precioUnitario),
+      valorEnBodega: calcularValorProducto(Number(p.stockActual), Number(p.precioUnitario)),
       precioUnitario: Number(p.precioUnitario),
     };
   });
