@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { enriquecerProductos, calcularValorTotalInventario } from '@/lib/inventory';
+import { Decimal } from '@prisma/client/runtime/library';
 
-function csvEscape(val: string | number | null | undefined): string {
+function csvEscape(val: string | number | Decimal | null | undefined): string {
   const s = String(val ?? '');
   if (s.includes(',') || s.includes('"') || s.includes('\n')) {
     return `"${s.replace(/"/g, '""')}"`;
