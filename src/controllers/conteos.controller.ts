@@ -30,7 +30,7 @@ export async function crearConteo(req: NextRequest, { user }: { user: JwtPayload
       data: productos.map((p) => ({
         conteoId: c.id,
         productoId: p.id,
-        stockSistema: p.stockActual,
+        stockSistema: Number(p.stockActual),
       })),
     });
     return c;
