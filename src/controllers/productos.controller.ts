@@ -5,6 +5,7 @@ import { calcularValorTotalInventario, enriquecerProductos } from '@/lib/invento
 import { JwtPayload } from '@/lib/auth';
 import { puedeVerCostos, puedeEditarPrecios, puedeEliminarProductos } from '@/middleware/checkRole';
 import { registrarAuditoria } from '@/lib/auditoria';
+import { UnidadMedida } from '@prisma/client';
 
 const productoSchema = z.object({
   nombre: z.string().min(2).max(200),
@@ -12,6 +13,7 @@ const productoSchema = z.object({
   skuCode: z.string().min(2).max(50),
   stockActual: z.number().int().min(0).optional(),
   stockMinimo: z.number().int().min(0),
+  unidadMedida: z.enum(['gramo', 'kilogramo', 'mililitro', 'litro', 'unidad', 'caja', 'frasco', 'bolsa']),
   precioUnitario: z.number().min(0).optional(),
   fechaVencimiento: z.string().optional().nullable(),
   ubicacionBodega: z.string().optional().nullable(),
@@ -96,6 +98,7 @@ export async function crearProducto(req: NextRequest, { user }: { user: JwtPaylo
       skuCode: parsed.skuCode,
       stockActual: parsed.stockActual ?? 0,
       stockMinimo: parsed.stockMinimo,
+      unidadMedida: parsed.unidadMedida as UnidadMedida,
       precioUnitario: parsed.precioUnitario ?? 0,
       fechaVencimiento: parsed.fechaVencimiento ? new Date(parsed.fechaVencimiento) : null,
       ubicacionBodega: parsed.ubicacionBodega,
@@ -131,6 +134,7 @@ export async function actualizarProducto(
     where: { id },
     data: {
       ...parsed,
+      unidadMedida: parsed.unidadMedida as UnidadMedida | undefined,
       fechaVencimiento: parsed.fechaVencimiento !== undefined
         ? parsed.fechaVencimiento ? new Date(parsed.fechaVencimiento) : null
         : undefined,
