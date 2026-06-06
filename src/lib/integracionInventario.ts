@@ -4,6 +4,7 @@
  */
 import { prisma } from './prisma';
 import { convertirAUnidadBase, UnidadMedida } from './unidades';
+import { TipoMovimiento } from '@prisma/client';
 
 /**
  * Registra el consumo de materiales de un caso y actualiza:
@@ -55,13 +56,13 @@ export async function registrarConsumoMateriales(
     // Registrar movimiento de inventario
     await prisma.movimiento.create({
       data: {
-        tipo: 'salida',
+        tipo: TipoMovimiento.Salida,
         cantidad: material.cantidad,
-        stockAnterior: producto.stockActual,
+        stockAnterior: Number(producto.stockActual),
         stockPosterior: nuevoStock,
         motivo: `Consumo caso ${casoId}`,
         productoId: material.productoId,
-        usuarioId: usuarioId || null,
+        usuarioId: usuarioId || 0,
       },
     });
 
@@ -116,7 +117,7 @@ export async function registrarConsumoMateriales(
       descripcion: `Consumo de materiales para caso ${casoId}`,
       referencia: `CAS-${casoId}`,
       categoria: 'produccion',
-      usuarioId: usuarioId || null,
+      usuarioId: usuarioId || 0,
     },
   });
 
