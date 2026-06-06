@@ -36,10 +36,10 @@ export async function crearMovimiento(req: NextRequest, { user }: { user: JwtPay
       let delta = data.cantidad;
       if (data.tipo === 'Salida') delta = -data.cantidad;
       if (data.tipo === 'Ajuste') {
-        delta = data.cantidad - producto.stockActual;
+        delta = data.cantidad - Number(producto.stockActual);
       }
 
-      const nuevoStock = producto.stockActual + delta;
+      const nuevoStock = Number(producto.stockActual) + delta;
       if (nuevoStock < 0) throw new Error('STOCK_INSUFICIENTE');
 
       const movimiento = await tx.movimiento.create({
@@ -48,7 +48,7 @@ export async function crearMovimiento(req: NextRequest, { user }: { user: JwtPay
           usuarioId: parseInt(user.sub, 10),
           tipo: data.tipo as TipoMovimiento,
           cantidad: data.tipo === 'Ajuste' ? Math.abs(delta) : data.cantidad,
-          stockAnterior: producto.stockActual,
+          stockAnterior: Number(producto.stockActual),
           stockPosterior: nuevoStock,
           motivo: data.motivo,
           referencia: data.referencia,
