@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --clinica-primary: #0284c7;
+  --clinica-bg: #f8fafc;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
+}
+
+/* Fondo médico sutil para login - Dentales Liberato */
+.bg-medico {
+  background-color: #f0f9ff;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(2, 132, 199, 0.06) 0%, transparent 50%),
+    linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+}
+
+.tooltip-help {
+  @apply relative inline-flex cursor-help;
+}
