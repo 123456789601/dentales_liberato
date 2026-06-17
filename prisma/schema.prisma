@@ -137,11 +137,7 @@ model Usuario {
 }
 
 model Categoria {
-<<<<<<< HEAD
   id          Int        @id @default(autoincrement())
-=======
-  id          Int        @id @default(autoincrement()) @db.UnsignedInt
->>>>>>> 62a23910fe26749163ceb6df4db6d13301eaebda
   nombre      String     @unique @db.VarChar(100)
   descripcion String?    @db.VarChar(255)
   createdAt   DateTime   @default(now()) @map("created_at")
@@ -152,11 +148,7 @@ model Categoria {
 }
 
 model Proveedor {
-<<<<<<< HEAD
   id        Int        @id @default(autoincrement())
-=======
-  id        Int        @id @default(autoincrement()) @db.UnsignedInt
->>>>>>> 62a23910fe26749163ceb6df4db6d13301eaebda
   nombre    String     @db.VarChar(150)
   contacto  String?    @db.VarChar(120)
   telefono  String?    @db.VarChar(30)
@@ -170,11 +162,7 @@ model Proveedor {
 }
 
 model Producto {
-<<<<<<< HEAD
   id                  Int          @id @default(autoincrement())
-=======
-  id                  Int          @id @default(autoincrement()) @db.UnsignedInt
->>>>>>> 62a23910fe26749163ceb6df4db6d13301eaebda
   nombre              String       @db.VarChar(200)
   descripcion         String?      @db.Text
   skuCode             String       @unique @map("sku_code") @db.VarChar(50)
@@ -349,11 +337,7 @@ model Notificacion {
 
 /// Pacientes del laboratorio dental
 model Paciente {
-<<<<<<< HEAD
   id          Int      @id @default(autoincrement())
-=======
-  id          Int      @id @default(autoincrement()) @db.UnsignedInt
->>>>>>> 62a23910fe26749163ceb6df4db6d13301eaebda
   nombre      String   @db.VarChar(180)
   identificacion String? @unique @db.VarChar(50)
   telefono    String?  @db.VarChar(30)
@@ -371,11 +355,7 @@ model Paciente {
 
 /// Fases o etapas de los casos dentales
 model FaseCaso {
-<<<<<<< HEAD
   id          Int      @id @default(autoincrement())
-=======
-  id          Int      @id @default(autoincrement()) @db.UnsignedInt
->>>>>>> 62a23910fe26749163ceb6df4db6d13301eaebda
   nombre      String   @db.VarChar(100)
   descripcion String?  @db.Text
   orden       Int      @default(0)
